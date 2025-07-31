@@ -1,0 +1,16 @@
+com\example\demo\DemoApplication.class
+com\example\demo\model\Customer.class
+com\example\demo\service\ProductService.class
+com\example\demo\model\Orders.class
+com\example\demo\dto\OrdersDTO.class
+com\example\demo\dto\ProductDTO.class
+com\example\demo\controller\OrdersController.class
+com\example\demo\repository\OrdersRepository.class
+com\example\demo\controller\ProductController.class
+com\example\demo\service\CustomerService.class
+com\example\demo\controller\CustomerController.class
+com\example\demo\dto\CustomerDTO.class
+com\example\demo\repository\CustomerRepository.class
+com\example\demo\repository\ProductRepository.class
+com\example\demo\model\Product.class
+com\example\demo\service\OrdersService.class

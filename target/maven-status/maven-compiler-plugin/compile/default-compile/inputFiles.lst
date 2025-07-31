@@ -1,0 +1,16 @@
+D:\Study\Internship\demo\src\main\java\com\example\demo\controller\OrdersController.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\repository\CustomerRepository.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\service\OrdersService.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\controller\CustomerController.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\DemoApplication.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\dto\ProductDTO.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\model\Product.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\service\ProductService.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\controller\ProductController.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\repository\OrdersRepository.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\dto\OrdersDTO.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\model\Customer.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\model\Orders.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\repository\ProductRepository.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\service\CustomerService.java
+D:\Study\Internship\demo\src\main\java\com\example\demo\dto\CustomerDTO.java

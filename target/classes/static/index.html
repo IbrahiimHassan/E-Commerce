@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>E-Commerce Portal</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    h1 { font-size: 28px; }
+    button, input { margin: 5px; padding: 8px; }
+    pre { background: #f4f4f4; padding: 10px; max-width: 900px; }
+    .tab { display: none; }
+    .active { display: block; }
+    .tab-buttons button { padding: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>E-Commerce Portal</h1>
+
+  <div class="tab-buttons">
+    <button onclick="showTab('customers')">Customers</button>
+    <button onclick="showTab('products')">Products</button>
+    <button onclick="showTab('orders')">Orders</button>
+  </div>
+
+  <!-- Customers -->
+  <div id="customers" class="tab active">
+  <h2>Customer Management</h2>
+  <button onclick="getCustomers()">Get All Customers</button><br><br>
+
+  <input id="custUpdateId" placeholder="ID to Update" onblur="loadCustomerToForm()" />
+  <button onclick="updateCustomer()">Update Customer</button><br><br>
+
+  <input id="custDeleteId" placeholder="ID to Delete" />
+  <button onclick="deleteCustomer()">Delete Customer</button><br><br>
+
+  <input id="custFirstName" placeholder="First Name" />
+  <input id="custLastName" placeholder="Last Name" />
+  <input id="custEmail" placeholder="Email" />
+  <input id="custPhone" placeholder="Phone" />
+  <input id="custAddress" placeholder="Address" />
+  <button onclick="createCustomer()">Add Customer</button>
+
+  <pre id="outputCustomer">...</pre>
+</div>
+
+
+  <!-- Products -->
+  <div id="products" class="tab">
+  <h2>Products</h2>
+  <button onclick="getProducts()">Get All Products</button><br><br>
+
+  <input id="prodUpdateId" placeholder="ID to Update" onblur="loadProductToForm()" />
+  <button onclick="updateProduct()">Update Product</button><br><br>
+
+  <input id="prodDeleteId" placeholder="ID to Delete" />
+  <button onclick="deleteProduct()">Delete Product</button><br><br>
+
+  <input id="prodName" placeholder="Name" />
+  <input id="prodDesc" placeholder="Description" />
+  <input id="prodPrice" placeholder="Price" />
+  <input id="prodStock" placeholder="Stock Quantity" />
+  <button onclick="createProduct()">Add Product</button>
+
+  <pre id="outputProduct">...</pre>
+</div>
+
+
+
+
+  <!-- Orders -->
+  <div id="orders" class="tab">
+  <h2>Orders</h2>
+  <button onclick="getOrders()">Get All Orders</button><br><br>
+
+  <input id="orderUpdateId" placeholder="ID to Update" onblur="loadOrderToForm()" />
+<button onclick="updateOrder()">Update Order</button><br><br>
+
+<input id="orderDeleteId" placeholder="ID to Delete" />
+<button onclick="deleteOrder()">Delete Order</button><br><br>
+
+<input id="orderCustId" placeholder="Customer ID" />
+<input id="orderProdId" placeholder="Product ID" />
+<input id="orderQty" placeholder="Quantity" />
+<input id="orderDate" placeholder="YYYY-MM-DD" />
+<input id="orderTotal" placeholder="Total Amount" />
+<input id="orderStatus" placeholder="Status" />
+<button onclick="createOrder()">Add Order</button>
+
+<pre id="outputOrder">...</pre>
+
+</div>
+
+
+
+  <script>
+    const apiBase = "http://localhost:8080";
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(div => div.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function getCustomers() {
+  fetch(`${apiBase}/customers`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('outputCustomer').textContent = JSON.stringify(data, null, 2);
+    });
+}
+
+function loadCustomerToForm() {
+  const id = document.getElementById('custUpdateId').value;
+  if (!id) return;
+
+  fetch(`${apiBase}/customers/${id}`)
+    .then(res => {
+      if (!res.ok) throw new Error("Customer not found");
+      return res.json();
+    })
+    .then(c => {
+      document.getElementById('custFirstName').value = c.firstName;
+      document.getElementById('custLastName').value = c.lastName;
+      document.getElementById('custEmail').value = c.email;
+      document.getElementById('custPhone').value = c.phone;
+      document.getElementById('custAddress').value = c.address;
+    })
+    .catch(() => {
+      document.getElementById('outputCustomer').textContent = `Customer ID ${id} not found`;
+    });
+}
+
+function updateCustomer() {
+  const id = document.getElementById('custUpdateId').value;
+
+  const customer = {
+    firstName: document.getElementById('custFirstName').value,
+    lastName: document.getElementById('custLastName').value,
+    email: document.getElementById('custEmail').value,
+    phone: document.getElementById('custPhone').value,
+    address: document.getElementById('custAddress').value
+  };
+
+  fetch(`${apiBase}/customers/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(customer)
+  })
+    .then(async res => {
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Server error: ${res.status} - ${errText}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById('outputCustomer').textContent =
+        `Customer updated:\n` + JSON.stringify(data, null, 2);
+      getCustomers();
+    })
+    .catch(err => {
+      document.getElementById('outputCustomer').textContent =
+        `Customer ID ${id} could not be updated.\n${err.message}`;
+    });
+}
+
+function deleteCustomer() {
+  const id = document.getElementById('custDeleteId').value;
+  if (!id) {
+    alert("Please enter a customer ID to delete");
+    return;
+  }
+
+  fetch(`${apiBase}/customers/${id}`, {
+    method: "DELETE"
+  }).then(res => {
+    if (res.ok) {
+      document.getElementById('outputCustomer').textContent = `Deleted customer with ID ${id}`;
+      getCustomers();
+    } else {
+      document.getElementById('outputCustomer').textContent = `Could not delete customer with ID ${id}`;
+    }
+  });
+}
+
+function createCustomer() {
+  const id = parseInt(document.getElementById('custUpdateId').value);
+  if (!id || isNaN(id)) {
+    alert("Please enter a unique new ID in the ID to Update field");
+    return;
+  }
+
+  fetch(`${apiBase}/customers/${id}`)
+    .then(res => {
+      if (res.ok) {
+        document.getElementById('outputCustomer').textContent =
+          `Customer ID ${id} already exists. Use Update instead.`;
+      } else {
+        const customer = {
+          customerId: id,
+          firstName: document.getElementById('custFirstName').value,
+          lastName: document.getElementById('custLastName').value,
+          email: document.getElementById('custEmail').value,
+          phone: document.getElementById('custPhone').value,
+          address: document.getElementById('custAddress').value
+        };
+
+        fetch(`${apiBase}/customers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(customer)
+        }).then(res => res.json())
+          .then(data => {
+            document.getElementById('outputCustomer').textContent =
+              ` Customer created:\n` + JSON.stringify(data, null, 2);
+            getCustomers();
+          });
+      }
+    });
+}
+
+
+    // Products
+function getProducts() {
+  fetch(`${apiBase}/products`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('outputProduct').textContent = JSON.stringify(data, null, 2);
+    });
+}
+
+function loadProductToForm() {
+  const id = document.getElementById('prodUpdateId').value;
+  if (!id) return;
+
+  fetch(`${apiBase}/products/${id}`)
+    .then(res => {
+      if (!res.ok) throw new Error("Product not found");
+      return res.json();
+    })
+    .then(p => {
+      document.getElementById('prodName').value = p.name;
+      document.getElementById('prodDesc').value = p.description;
+      document.getElementById('prodPrice').value = p.price;
+      document.getElementById('prodStock').value = p.stockQuantity;
+    })
+    .catch(() => {
+      document.getElementById('outputProduct').textContent = `❌ Product ID ${id} not found`;
+    });
+}
+
+function updateProduct() {
+  const id = document.getElementById('prodUpdateId').value;
+
+  const product = {
+    name: document.getElementById('prodName').value,
+    description: document.getElementById('prodDesc').value,
+    price: parseFloat(document.getElementById('prodPrice').value),
+    stockQuantity: parseInt(document.getElementById('prodStock').value)
+  };
+
+  fetch(`${apiBase}/products/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(product)
+  })
+    .then(async res => {
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Server error: ${res.status} - ${errText}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById('outputProduct').textContent =
+        `Product updated:\n` + JSON.stringify(data, null, 2);
+      getProducts();
+    })
+    .catch(err => {
+      document.getElementById('outputProduct').textContent =
+        `Product ID ${id} could not be updated.\n${err.message}`;
+    });
+}
+
+
+function deleteProduct() {
+  const id = document.getElementById('prodDeleteId').value;
+  if (!id) {
+    alert("Please enter a product ID to delete");
+    return;
+  }
+
+  fetch(`${apiBase}/products/${id}`, {
+    method: "DELETE"
+  }).then(res => {
+    if (res.ok) {
+      document.getElementById('outputProduct').textContent = `Deleted product with ID ${id}`;
+      getProducts();
+    } else {
+      document.getElementById('outputProduct').textContent = `Could not delete product with ID ${id}`;
+    }
+  });
+}
+
+function createProduct() {
+  const id = parseInt(document.getElementById('prodUpdateId').value);
+  if (!id || isNaN(id)) {
+    alert("Please enter a unique new ID in the ID to Update field");
+    return;
+  }
+
+  fetch(`${apiBase}/products/${id}`)
+    .then(res => {
+      if (res.ok) {
+        document.getElementById('outputProduct').textContent = ` Product ID ${id} already exists. Use Update instead.`;
+      } else {
+        const product = {
+          productId: id,
+          name: document.getElementById('prodName').value,
+          description: document.getElementById('prodDesc').value,
+          price: parseFloat(document.getElementById('prodPrice').value),
+          stockQuantity: parseInt(document.getElementById('prodStock').value)
+        };
+
+        fetch(`${apiBase}/products`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(product)
+        }).then(res => res.json())
+          .then(data => {
+            document.getElementById('outputProduct').textContent = ` Product created:\n` + JSON.stringify(data, null, 2);
+            clearProductForm();
+            getProducts();
+          });
+      }
+    });
+}
+
+
+
+    // Orders
+    function getOrders() {
+  fetch(`${apiBase}/orders`).then(res => res.json()).then(data => {
+    document.getElementById('outputOrder').textContent = JSON.stringify(data, null, 2);
+  });
+}
+
+function getOrders() {
+  fetch(`${apiBase}/orders`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('outputOrder').textContent = JSON.stringify(data, null, 2);
+    });
+}
+
+function loadOrderToForm() {
+  const id = document.getElementById('orderUpdateId').value;
+  if (!id) return;
+
+  fetch(`${apiBase}/orders/${id}`)
+    .then(res => {
+      if (!res.ok) throw new Error("Order not found");
+      return res.json();
+    })
+    .then(o => {
+      document.getElementById('orderCustId').value = o.customerId;
+      document.getElementById('orderProdId').value = o.productId;
+      document.getElementById('orderQty').value = o.quantity;
+      document.getElementById('orderDate').value = o.orderDate;
+      document.getElementById('orderTotal').value = o.totalAmount;
+      document.getElementById('orderStatus').value = o.status;
+    })
+    .catch(() => {
+      document.getElementById('outputOrder').textContent = ` Order ID ${id} not found`;
+    });
+}
+
+function updateOrder() {
+  const id = document.getElementById('orderUpdateId').value;
+
+  const order = {
+    customerId: parseInt(document.getElementById('orderCustId').value),
+    productId: parseInt(document.getElementById('orderProdId').value),
+    quantity: parseInt(document.getElementById('orderQty').value),
+    orderDate: document.getElementById('orderDate').value,
+    totalAmount: parseFloat(document.getElementById('orderTotal').value),
+    status: document.getElementById('orderStatus').value
+  };
+
+  fetch(`${apiBase}/orders/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(order)
+  })
+    .then(async res => {
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Server error: ${res.status} - ${errText}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById('outputOrder').textContent =
+        ` Order updated:\n` + JSON.stringify(data, null, 2);
+      getOrders();
+    })
+    .catch(err => {
+      document.getElementById('outputOrder').textContent =
+        ` Order ID ${id} could not be updated.\n${err.message}`;
+    });
+}
+
+function deleteOrder() {
+  const id = document.getElementById('orderDeleteId').value;
+  if (!id) {
+    alert("Please enter an order ID to delete");
+    return;
+  }
+
+  fetch(`${apiBase}/orders/${id}`, {
+    method: "DELETE"
+  }).then(res => {
+    if (res.ok) {
+      document.getElementById('outputOrder').textContent = ` Deleted order with ID ${id}`;
+      getOrders();
+    } else {
+      document.getElementById('outputOrder').textContent = ` Could not delete order with ID ${id}`;
+    }
+  });
+}
+
+function createOrder() {
+  const id = parseInt(document.getElementById('orderUpdateId').value);
+  if (!id || isNaN(id)) {
+    alert("Please enter a unique new ID in the ID to Update field");
+    return;
+  }
+
+  fetch(`${apiBase}/orders/${id}`)
+    .then(res => {
+      if (res.ok) {
+        document.getElementById('outputOrder').textContent = ` Order ID ${id} already exists. Use Update instead.`;
+      } else {
+        const order = {
+          orderId: id,
+          customerId: parseInt(document.getElementById('orderCustId').value),
+          productId: parseInt(document.getElementById('orderProdId').value),
+          quantity: parseInt(document.getElementById('orderQty').value),
+          orderDate: document.getElementById('orderDate').value,
+          totalAmount: parseFloat(document.getElementById('orderTotal').value),
+          status: document.getElementById('orderStatus').value
+        };
+
+        fetch(`${apiBase}/orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(order)
+        }).then(res => res.json())
+          .then(data => {
+            document.getElementById('outputOrder').textContent =
+              ` Order created:\n` + JSON.stringify(data, null, 2);
+            getOrders();
+          });
+      }
+    });
+}
+
+
+  </script>
+</body>
+</html>
